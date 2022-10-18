@@ -3,30 +3,58 @@
     createApp({
         data() {
             return {
-                cityInfo: "Nothing to show just yet",
-                cityName: "Dublin",
-                cityLoc: null
+                cityName: null,
+                umbrellaRequired: null,
+                packingMessage: null
             }
         },
         methods: {
             httpsGet(clicked) {
                 if (clicked) {
-                    fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${this.cityName}&appid=cb9186962287c117cf8bab828ca365dc`)
+                    fetch(`http://api.openweathermap.org/data/2.5/forecast?q=${this.cityName}&appid=cb9186962287c117cf8bab828ca365dc&units=metric`)
                     .then((response) => response.json())
                     .then((locData) => {
                         console.log(locData);
-                        console.log(typeof(locData));
-                        console.log(locData[0]['lat']);
 
-                        var lon = locData[0]['lon'].toFixed(2);
-                        var lat = locData[0]['lat'].toFixed(2);
+                        var umbrellaForYou
+                        for (var i = 0; i < 32; i++) {
+                            if ("rain" in locData["list"][i]) {
+                                umbrellaForYou = true;
+                                break;
+                            }
+                        }
+                        if (umbrellaForYou) {
+                            this.umbrellaRequired = "Bring an umbrella ya tool!"
+                        } else {
+                            this.umbrellaRequired = "Weather looks good, no need for an umbrella!"
+                        }
 
-                        fetch(`http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=cb9186962287c117cf8bab828ca365dc`)
-                        .then((response) => response.json())
-                        .then((weatherData) => {
-                            console.log(weatherData);
-                            console.log(typeof(weatherData));
-                        })
+                        var temperatureArray = []
+                        var j = 0;
+                        while (temperatureArray.length < 3 && j < 32) {
+                            var weatherCaseMin = locData["list"][i]["main"]["temp_min"];
+                            var weatherCaseMax = locData["list"][i]["main"]["temp_max"];
+                            switch(true) {
+                                case (weatherCaseMin < 12 || weatherCaseMax < 12):
+                                    if (!temperatureArray.includes("cold"))
+                                        temperatureArray.push("cold");
+                                break;
+                                case (weatherCaseMin < 25 || weatherCaseMax < 25):
+                                    if (!temperatureArray.includes("mild"))
+                                        temperatureArray.push("mild");
+                                break;
+                                case (weatherCaseMin >= 25 || weatherCaseMax >= 25):
+                                    if (!temperatureArray.includes("mild"))
+                                        temperatureArray.push("mild");
+                                break;
+                            }
+                            j++;
+                        }
+
+                        var tempLen = temperatureArray.length;
+                        this.packingMessage = `${temperatureArray[0].charAt(0).toUpperCase() + temperatureArray[0].slice(1)}${tempLen = 1 ? " " : ", "}
+                            ${tempLen > 1 ? temperatureArray[1] : ""}${tempLen > 2 ? " and " : ""}
+                            ${tempLen > 2 ? temperatureArray[2] : ""} temperatures expected, pack accordingly`;
                     });
                 }
             }
@@ -36,7 +64,8 @@
 
 <div id="app">
     <p>What city would you like to visit?</p>
-    <input v-model="cityName" placeholder="Enter City"/>
+    <input v-model="cityName" placeholder="Enter City and Country Code"/>
     <button v-on:click="httpsGet">Get Weather</button>
-    <p>{{ cityInfo }}</p>
+    <p>{{ umbrellaRequired }}</p>
+    <p>{{ packingMessage }}</p>
 </div>
