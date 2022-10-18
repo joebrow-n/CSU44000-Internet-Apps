@@ -1,0 +1,32 @@
+<script type="module">
+    import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+
+    createApp({
+        data() {
+            return {
+                message: "hello World!",
+                seen: true,
+                list: ["banana", "orange", "tomato"]
+            }
+        },
+        methods: {
+            DoSomething:doSomething
+        }
+    }).mount("#app")
+
+    function doSomething() {
+        console.log("Hello Again!")
+    }
+</script>
+
+<div id="app">
+    <p>{{ message }}</p>
+    <ol v-if="seen">
+        <li v-for="item of list">
+            {{ item }}
+        </li>
+    </ol>
+    <button v-on:click="list.reverse()">Reverse list</button>
+    <input v-model="message">
+    <button @:click="DoSomething">Mystery Button :0</button>
+</div>

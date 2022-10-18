@@ -1,0 +1,42 @@
+<script type="module">
+    import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+    createApp({
+        data() {
+            return {
+                cityInfo: "Nothing to show just yet",
+                cityName: "Dublin",
+                cityLoc: null
+            }
+        },
+        methods: {
+            httpsGet(clicked) {
+                if (clicked) {
+                    fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${this.cityName}&appid=cb9186962287c117cf8bab828ca365dc`)
+                    .then((response) => response.json())
+                    .then((locData) => {
+                        console.log(locData);
+                        console.log(typeof(locData));
+                        console.log(locData[0]['lat']);
+
+                        var lon = locData[0]['lon'].toFixed(2);
+                        var lat = locData[0]['lat'].toFixed(2);
+
+                        fetch(`http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=cb9186962287c117cf8bab828ca365dc`)
+                        .then((response) => response.json())
+                        .then((weatherData) => {
+                            console.log(weatherData);
+                            console.log(typeof(weatherData));
+                        })
+                    });
+                }
+            }
+        }
+    }).mount("#app")
+</script>
+
+<div id="app">
+    <p>What city would you like to visit?</p>
+    <input v-model="cityName" placeholder="Enter City"/>
+    <button v-on:click="httpsGet">Get Weather</button>
+    <p>{{ cityInfo }}</p>
+</div>
