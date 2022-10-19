@@ -5,7 +5,11 @@
             return {
                 cityName: null,
                 umbrellaRequired: null,
-                packingMessage: null
+                packingMessage: null,
+                avgTemp: null,
+                avgRain: null,
+                avgWind: null,
+                pollutionWarning: null
             }
         },
         methods: {
@@ -13,16 +17,21 @@
                 if (clicked) {
                     fetch(`http://api.openweathermap.org/data/2.5/forecast?q=${this.cityName}&appid=cb9186962287c117cf8bab828ca365dc&units=metric`)
                     .then((response) => response.json())
-                    .then((locData) => {
-                        console.log(locData);
+                    .then((cityData) => {
+                        console.log(cityData);
 
                         var umbrellaForYou
+                        var temp = 0, rainfall = 0, windSpeed = 0;
+
                         for (var i = 0; i < 32; i++) {
-                            if ("rain" in locData["list"][i]) {
+                            if ("rain" in cityData["list"][i]) {
                                 umbrellaForYou = true;
-                                break;
+                                rainfall += cityData["list"][i]["rain"]["3h"];
                             }
+                            temp += (cityData["list"][i]["main"]["temp_min"] + cityData["list"][i]["main"]["temp_max"])/2;
+                            windSpeed += cityData["list"][i]["wind"]["speed"];
                         }
+
                         if (umbrellaForYou) {
                             this.umbrellaRequired = "Bring an umbrella ya tool!"
                         } else {
@@ -32,8 +41,8 @@
                         var temperatureArray = []
                         var j = 0;
                         while (temperatureArray.length < 3 && j < 32) {
-                            var weatherCaseMin = locData["list"][i]["main"]["temp_min"];
-                            var weatherCaseMax = locData["list"][i]["main"]["temp_max"];
+                            var weatherCaseMin = cityData["list"][i]["main"]["temp_min"];
+                            var weatherCaseMax = cityData["list"][i]["main"]["temp_max"];
                             switch(true) {
                                 case (weatherCaseMin < 12 || weatherCaseMax < 12):
                                     if (!temperatureArray.includes("cold"))
@@ -55,6 +64,33 @@
                         this.packingMessage = `${temperatureArray[0].charAt(0).toUpperCase() + temperatureArray[0].slice(1)}${tempLen = 1 ? " " : ", "}
                             ${tempLen > 1 ? temperatureArray[1] : ""}${tempLen > 2 ? " and " : ""}
                             ${tempLen > 2 ? temperatureArray[2] : ""} temperatures expected, pack accordingly`;
+
+                        this.avgTemp = (temp/32).toFixed(2);
+                        this.avgRain = (rainfall/32).toFixed(2);
+                        this.avgWind = (windSpeed/32).toFixed(2);
+
+                        var lon = cityData["city"]["coord"]["lon"].toFixed(2);
+                        var lat = cityData["city"]["coord"]["lat"].toFixed(2);
+
+                        fetch(`http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=${lat}&lon=${lon}&appid=cb9186962287c117cf8bab828ca365dc`)
+                        .then((response) => response.json())
+                        .then((airData) => {
+                            console.log(airData);
+
+                            var isAirDangerous = false;
+                            for (var c = 0; c < airData["list"].length; c++) {
+                                if (airData["list"][i]["components"]["pm2_5"] > 10) {
+                                    isAirDangerous = true;
+                                }
+                            }
+
+                            if (isAirDangerous == true) {
+                                this.pollutionWarning = `The air is highly polluted in ${cityData["city"]["name"]}. It is recommended you wear a face covering`;
+                            } else {
+                                this.pollutionWarning = `The air is clean in ${cityData["city"]["name"]}. No need to wear a face covering`
+                            }
+
+                        });
                     });
                 }
             }
@@ -68,4 +104,21 @@
     <button v-on:click="httpsGet">Get Weather</button>
     <p>{{ umbrellaRequired }}</p>
     <p>{{ packingMessage }}</p>
+    <p>{{ pollutionWarning }}</p>
+    <table>
+        <thead>
+        <tr>
+            <th>Temperature</th>
+            <th>Wind Speed</th>
+            <th>Rainfall</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{{ avgTemp }}</td>
+            <td>{{ avgWind }}</td>
+            <td>{{ avgRain }}</td>
+        </tr>
+        </tbody>
+    </table>
 </div>
