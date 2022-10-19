@@ -40,28 +40,28 @@
 
                         var temperatureArray = []
                         var j = 0;
-                        while (temperatureArray.length < 3 && j < 32) {
-                            var weatherCaseMin = cityData["list"][i]["main"]["temp_min"];
-                            var weatherCaseMax = cityData["list"][i]["main"]["temp_max"];
+                        while (temperatureArray.length !== 3 && j < 32) {
+                            var weatherCase = cityData["list"][j]["main"]["temp"];
                             switch(true) {
-                                case (weatherCaseMin < 12 || weatherCaseMax < 12):
+                                case (weatherCase < 12):
                                     if (!temperatureArray.includes("cold"))
                                         temperatureArray.push("cold");
                                 break;
-                                case (weatherCaseMin < 25 || weatherCaseMax < 25):
+                                case (weatherCase >= 12 && weatherCase <= 25 ):
                                     if (!temperatureArray.includes("mild"))
                                         temperatureArray.push("mild");
                                 break;
-                                case (weatherCaseMin >= 25 || weatherCaseMax >= 25):
+                                case (weatherCaseMax > 25):
                                     if (!temperatureArray.includes("mild"))
                                         temperatureArray.push("mild");
                                 break;
                             }
                             j++;
                         }
+                        console.log(temperatureArray);
 
                         var tempLen = temperatureArray.length;
-                        this.packingMessage = `${temperatureArray[0].charAt(0).toUpperCase() + temperatureArray[0].slice(1)}${tempLen = 1 ? " " : ", "}
+                        this.packingMessage = `${temperatureArray[0].charAt(0).toUpperCase() + temperatureArray[0].slice(1)}${tempLen == 1 ? " " : tempLen == 2 ? " and " : ", "}
                             ${tempLen > 1 ? temperatureArray[1] : ""}${tempLen > 2 ? " and " : ""}
                             ${tempLen > 2 ? temperatureArray[2] : ""} temperatures expected, pack accordingly`;
 
