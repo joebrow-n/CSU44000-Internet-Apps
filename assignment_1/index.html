@@ -33,12 +33,12 @@
                         }
 
                         if (umbrellaForYou) {
-                            this.umbrellaRequired = "Bring an umbrella ya tool!"
+                            this.umbrellaRequired = "Bring an umbrella ya tool!";
                         } else {
-                            this.umbrellaRequired = "Weather looks good, no need for an umbrella!"
+                            this.umbrellaRequired = "Weather looks good, no need for an umbrella!";
                         }
 
-                        var temperatureArray = []
+                        var temperatureArray = [];
                         var j = 0;
                         while (temperatureArray.length !== 3 && j < 32) {
                             var weatherCase = cityData["list"][j]["main"]["temp"];
@@ -51,9 +51,9 @@
                                     if (!temperatureArray.includes("mild"))
                                         temperatureArray.push("mild");
                                 break;
-                                case (weatherCaseMax > 25):
-                                    if (!temperatureArray.includes("mild"))
-                                        temperatureArray.push("mild");
+                                case (weatherCase > 25):
+                                    if (!temperatureArray.includes("hot"))
+                                        temperatureArray.push("hot");
                                 break;
                             }
                             j++;
