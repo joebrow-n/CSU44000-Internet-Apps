@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<script type="module">
+    import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+    createApp({
+        data() {
+            return {
+                cityName: null,
+                umbrellaRequired: null,
+                packingMessage: null,
+                avgTemp: null,
+                avgRain: null,
+                avgWind: null,
+                pollutionWarning: null,
+                image: 'https://wallpaperaccess.com/full/5522180.jpg'
+            }
+        },
+        methods: {
+            httpsGet(clicked) {
+                if (clicked) {
+                    fetch(`/forecast/${this.cityName}`)
+                    .then((response) => response.json())
+                    .then((cityData) => {
+                        console.log(cityData);
+
+                        var umbrellaForYou
+                        var temp = 0, rainfall = 0, windSpeed = 0;
+
+                        for (var i = 0; i < 32; i++) {
+                            if ("rain" in cityData["list"][i]) {
+                                umbrellaForYou = true;
+                                rainfall += cityData["list"][i]["rain"]["3h"];
+                            }
+                            temp += (cityData["list"][i]["main"]["temp_min"] + cityData["list"][i]["main"]["temp_max"])/2;
+                            windSpeed += cityData["list"][i]["wind"]["speed"];
+                        }
+
+                        if (umbrellaForYou) {
+                            this.umbrellaRequired = "Bring an umbrella, it'll be raining!";
+                        } else {
+                            this.umbrellaRequired = "Weather looks good, no need for an umbrella!";
+                        }
+
+                        var temperatureArray = [];
+                        var j = 0;
+                        while (temperatureArray.length !== 3 && j < 32) {
+                            var weatherCase = cityData["list"][j]["main"]["temp"];
+                            switch(true) {
+                                case (weatherCase < 12):
+                                    if (!temperatureArray.includes("cold"))
+                                        temperatureArray.push("cold");
+                                break;
+                                case (weatherCase >= 12 && weatherCase <= 25 ):
+                                    if (!temperatureArray.includes("mild"))
+                                        temperatureArray.push("mild");
+                                break;
+                                case (weatherCase > 25):
+                                    if (!temperatureArray.includes("hot"))
+                                        temperatureArray.push("hot");
+                                break;
+                            }
+                            j++;
+                        }
+                        console.log(temperatureArray);
+
+                        var tempLen = temperatureArray.length;
+                        this.packingMessage = `${temperatureArray[0].charAt(0).toUpperCase() + temperatureArray[0].slice(1)}${tempLen == 1 ? " " : tempLen == 2 ? " and " : ", "}
+                            ${tempLen > 1 ? temperatureArray[1] : ""}${tempLen > 2 ? " and " : ""}
+                            ${tempLen > 2 ? temperatureArray[2] : ""} temperatures expected, pack accordingly`;
+
+                        this.avgTemp = (temp/32).toFixed(2);
+                        this.avgRain = (rainfall/32).toFixed(2);
+                        this.avgWind = (windSpeed/32).toFixed(2);
+
+                        var lon = cityData["city"]["coord"]["lon"].toFixed(2);
+                        var lat = cityData["city"]["coord"]["lat"].toFixed(2);
+
+                        fetch(`/air_pollution/${lon}/${lat}`)
+                        .then((response) => response.json())
+                        .then((airData) => {
+                            console.log(airData);
+
+                            var isAirDangerous = false;
+                            for (var c = 0; c < airData["list"].length; c++) {
+                                if (airData["list"][i]["components"]["pm2_5"] > 10) {
+                                    isAirDangerous = true;
+                                }
+                            }
+
+                            if (isAirDangerous == true) {
+                                this.pollutionWarning = `The air is highly polluted in ${cityData["city"]["name"]}. It is recommended you wear a face covering`;
+                            } else {
+                                this.pollutionWarning = `The air is clean in ${cityData["city"]["name"]}. No need to wear a face covering`
+                            }
+
+                        });
+
+                        if (temperatureArray.includes('cold')) {
+                            this.image = 'https://img5.goodfon.com/wallpaper/nbig/2/d6/diana-hryhorian-by-diana-hryhorian-minimalizm-peizazh-art--2.jpg'
+                        } else if (temperatureArray.includes('mild')) {
+                            this.image = 'https://wallpaperaccess.com/full/812553.jpg'
+                        } else if (temperatureArray.includes('hot')) {
+                            this.image = 'https://www.teahub.io/photos/full/96-962647_minimalist-landscape-wallpaper-yellow.jpg'
+                        }
+                    });
+                }
+            }
+        }
+    }).mount("#app")
+</script>
+
+<div id="app">
+    <div :style="{ 'background-image': 'url(' + image + ')'}" style="height: 100vh; background-size: 100%;" >
+        <p>What city would you like to visit?</p>
+        <input v-model="cityName" placeholder="Enter City and Country Code"/>
+        <button v-on:click="httpsGet">Get Weather</button>
+        <p>{{ umbrellaRequired }}</p>
+        <p>{{ packingMessage }}</p>
+        <p>{{ pollutionWarning }}</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Temperature</th>
+                <th>Wind Speed</th>
+                <th>Rainfall</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ avgTemp }}</td>
+                <td>{{ avgWind }}</td>
+                <td>{{ avgRain }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</html>
