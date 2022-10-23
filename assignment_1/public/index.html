@@ -15,7 +15,7 @@
         methods: {
             httpsGet(clicked) {
                 if (clicked) {
-                    fetch(`http://api.openweathermap.org/data/2.5/forecast?q=${this.cityName}&appid=cb9186962287c117cf8bab828ca365dc&units=metric`)
+                    fetch(`/forecast/${this.cityName}`)
                     .then((response) => response.json())
                     .then((cityData) => {
                         console.log(cityData);
@@ -72,7 +72,7 @@
                         var lon = cityData["city"]["coord"]["lon"].toFixed(2);
                         var lat = cityData["city"]["coord"]["lat"].toFixed(2);
 
-                        fetch(`http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=${lat}&lon=${lon}&appid=cb9186962287c117cf8bab828ca365dc`)
+                        fetch(`/air_pollution/${lon}/${lat}`)
                         .then((response) => response.json())
                         .then((airData) => {
                             console.log(airData);
