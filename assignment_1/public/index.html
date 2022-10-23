@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html>
 <script type="module">
     import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
     createApp({
@@ -9,7 +11,8 @@
                 avgTemp: null,
                 avgRain: null,
                 avgWind: null,
-                pollutionWarning: null
+                pollutionWarning: null,
+                image: 'https://wallpaperaccess.com/full/5522180.jpg'
             }
         },
         methods: {
@@ -33,7 +36,7 @@
                         }
 
                         if (umbrellaForYou) {
-                            this.umbrellaRequired = "Bring an umbrella ya tool!";
+                            this.umbrellaRequired = "Bring an umbrella, it'll be raining!";
                         } else {
                             this.umbrellaRequired = "Weather looks good, no need for an umbrella!";
                         }
@@ -91,6 +94,14 @@
                             }
 
                         });
+
+                        if (temperatureArray.includes('cold')) {
+                            this.image = 'https://img5.goodfon.com/wallpaper/nbig/2/d6/diana-hryhorian-by-diana-hryhorian-minimalizm-peizazh-art--2.jpg'
+                        } else if (temperatureArray.includes('mild')) {
+                            this.image = 'https://wallpaperaccess.com/full/812553.jpg'
+                        } else if (temperatureArray.includes('hot')) {
+                            this.image = 'https://www.teahub.io/photos/full/96-962647_minimalist-landscape-wallpaper-yellow.jpg'
+                        }
                     });
                 }
             }
@@ -99,26 +110,29 @@
 </script>
 
 <div id="app">
-    <p>What city would you like to visit?</p>
-    <input v-model="cityName" placeholder="Enter City and Country Code"/>
-    <button v-on:click="httpsGet">Get Weather</button>
-    <p>{{ umbrellaRequired }}</p>
-    <p>{{ packingMessage }}</p>
-    <p>{{ pollutionWarning }}</p>
-    <table>
-        <thead>
-        <tr>
-            <th>Temperature</th>
-            <th>Wind Speed</th>
-            <th>Rainfall</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>{{ avgTemp }}</td>
-            <td>{{ avgWind }}</td>
-            <td>{{ avgRain }}</td>
-        </tr>
-        </tbody>
-    </table>
+    <div :style="{ 'background-image': 'url(' + image + ')'}" style="height: 100vh; background-size: 100%;" >
+        <p>What city would you like to visit?</p>
+        <input v-model="cityName" placeholder="Enter City and Country Code"/>
+        <button v-on:click="httpsGet">Get Weather</button>
+        <p>{{ umbrellaRequired }}</p>
+        <p>{{ packingMessage }}</p>
+        <p>{{ pollutionWarning }}</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Temperature</th>
+                <th>Wind Speed</th>
+                <th>Rainfall</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ avgTemp }}</td>
+                <td>{{ avgWind }}</td>
+                <td>{{ avgRain }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
+</html>
